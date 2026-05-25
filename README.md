@@ -3,97 +3,97 @@
 [![C](https://img.shields.io/badge/C-A8B9CC?style=flat&logo=c&logoColor=white)](https://en.cppreference.com/w/)
 [![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
 
-## 📋 Table des matières
+## 📋 Table of Contents
 
-- [Vue d'ensemble](#vue-densemble)
-- [Contexte scientifique](#contexte-scientifique)
-- [Architecture du projet](#architecture-du-projet)
+- [Overview](#overview)
+- [Scientific Background](#scientific-background)
+- [Project Architecture](#project-architecture)
 - [Installation](#installation)
-- [Utilisation](#utilisation)
-- [Résultats et analyse](#résultats-et-analyse)
-- [Détails techniques](#détails-techniques)
-- [Optimisations et considérations](#optimisations-et-considérations)
-- [Auteur](#auteur)
+- [Usage](#usage)
+- [Results and Analysis](#results-and-analysis)
+- [Technical Details](#technical-details)
+- [Optimizations and Considerations](#optimizations-and-considerations)
+- [Author](#author)
 
 ---
 
-## Vue d'ensemble
+## Overview
 
-Ce projet implémente le **Box-Muller Transform**, un algorithme probabiliste qui génère des nombres aléatoires suivant une **distribution normale (gaussienne)** à partir de nombres uniformément distribués.
+This project implements the **Box-Muller Transform**, a probabilistic algorithm that generates random numbers following a **normal (Gaussian) distribution** from uniformly distributed numbers.
 
-**Utilité principale :** Générer des échantillons statistiquement valides pour valider les paramètres cryptographiques des systèmes LWE (Learning With Errors) et RLWE (Ring Learning With Errors), utilisés en cryptographie post-quantique et en chiffrement homomorphe.
+**Primary Use:** Generate statistically valid samples to validate cryptographic parameters of LWE (Learning With Errors) and RLWE (Ring Learning With Errors) systems, used in post-quantum cryptography and fully homomorphic encryption.
 
-### ✨ Caractéristiques clés
+### ✨ Key Features
 
-- ✅ Génération de **1 000 000 d'échantillons** gaussiens
-- ✅ Calcul rapide avec mesure de performance
-- ✅ Analyse statistique complète (moyenne, variance)
-- ✅ Export des résultats en CSV pour analyse ultérieure
-- ✅ Deux implémentations C (main.c et version2.c)
-- ✅ Script Python pour analyse statistique avancée
+- ✅ Generation of **1,000,000 Gaussian samples**
+- ✅ Fast computation with performance measurement
+- ✅ Complete statistical analysis (mean, variance)
+- ✅ CSV export for further analysis
+- ✅ Two C implementations (main.c and version2.c)
+- ✅ Python script for advanced statistical analysis
 
 ---
 
-## Contexte scientifique
+## Scientific Background
 
-### L'algorithme Box-Muller
+### The Box-Muller Algorithm
 
-Le **Box-Muller Transform** convertit deux nombres aléatoires uniformes indépendants (U₁, U₂) en deux nombres aléatoires normalement distribués (X₁, X₂) :
+The **Box-Muller Transform** converts two independent uniform random numbers (U₁, U₂) into two normally distributed random numbers (X₁, X₂):
 
 ```
 X₁ = √(-2 ln U₁) × cos(2πU₂)
 X₂ = √(-2 ln U₁) × sin(2πU₂)
 ```
 
-### Cryptographie post-quantique
+### Post-Quantum Cryptography
 
-LWE et RLWE sont des problèmes difficiles censés résister aux attaques des ordinateurs quantiques. Leur sécurité repose sur l'ajout d'erreurs gaussiennes à faible variance :
+LWE and RLWE are difficult problems believed to resist quantum computer attacks. Their security depends on adding low-variance Gaussian errors:
 
-- **σ (écart-type)** : Dans ce projet, σ = 2^(-3.19) ≈ 0.1104
-- **Centré et réduit** : Distribution N(μ=0, σ²)
-- **Validation** : Les tests statistiques vérifient l'absence de biais
+- **σ (standard deviation)** : In this project, σ = 2^(-3.19) ≈ 0.1104
+- **Centered and reduced** : Distribution N(μ=0, σ²)
+- **Validation** : Statistical tests verify absence of bias
 
 ---
 
-## Architecture du projet
+## Project Architecture
 
 ```
 Box-Muller-Random-Generator/
-├── main.c                                          # Implémentation principale
-├── Box_Muller_version2.c                          # Implémentation alternative (structure)
-├── extraction et analyse statistique...py          # Analyse statistique en Python
-├── sample_data.csv                                # Données générées (1M échantillons)
-├── Random_Gaussian.cbp                            # Configuration Code::Blocks
-├── README.md                                      # Cette documentation
-└── .git/                                          # Historique de version
+├── main.c                                          # Main implementation
+├── Box_Muller_version2.c                          # Alternative implementation (struct)
+├── extraction et analyse statistique...py          # Statistical analysis in Python
+├── sample_data.csv                                # Generated data (1M samples)
+├── Random_Gaussian.cbp                            # Code::Blocks configuration
+├── README.md                                      # This documentation
+└── .git/                                          # Version history
 ```
 
-### Fichiers source détaillés
+### Detailed Source Files
 
-#### **main.c** - Implémentation principale (2705 octets)
+#### **main.c** - Main Implementation (2705 bytes)
 
-La version production qui :
-- Génère 1 000 000 d'échantillons gaussiens
-- Mesure le temps d'exécution
-- Calcule moyenne et variance
-- Exporte les résultats en CSV
+The production version that:
+- Generates 1,000,000 Gaussian samples
+- Measures execution time
+- Calculates mean and variance
+- Exports results to CSV
 
-**Points clés du code :**
+**Key Code Points:**
 
 ```c
-// Génère deux valeurs normales à partir de deux uniformes
+// Generates two normal values from two uniform values
 void box_muller_x1_x2(double u1, double u2, double *x1, double *x2) {
     *x1 = sqrt(-2.0 * log(u1)) * cos(2.0 * M_PI * u2);
     *x2 = sqrt(-2.0 * log(u1)) * sin(2.0 * M_PI * u2);
 }
 
-// Enveloppe avec vérification u1 > 0 (log(0) = -∞)
+// Wrapper with u1 > 0 check (log(0) = -∞)
 double generate_normal_error(double mu, double sigma) {
     double u1, u2;
     do {
         u1 = uniform_distribution();
         u2 = uniform_distribution();
-    } while (u1 <= 0.0);  // Sécurité
+    } while (u1 <= 0.0);  // Safety check
     
     double x1, x2;
     box_muller_x1_x2(u1, u2, &x1, &x2);
@@ -101,12 +101,12 @@ double generate_normal_error(double mu, double sigma) {
 }
 ```
 
-#### **Box_Muller_version2.c** - Implémentation alternative (1095 octets)
+#### **Box_Muller_version2.c** - Alternative Implementation (1095 bytes)
 
-Version optimisée avec :
-- Structure `BoxMullerResult` pour encapsuler les deux résultats
-- Code plus compact (10 000 échantillons affichés directement)
-- Meilleure séparation des concerns
+Optimized version with:
+- `BoxMullerResult` structure to encapsulate both results
+- More compact code (10,000 samples printed directly)
+- Better separation of concerns
 
 ```c
 typedef struct {
@@ -115,46 +115,46 @@ typedef struct {
 } BoxMullerResult;
 ```
 
-#### **Script Python** - Analyse statistique
+#### **Python Script** - Statistical Analysis
 
-Utilise Pandas pour charger et analyser le CSV généré :
-- Calcul de moyenne et écart-type
-- Probabilité d'événements spécifiques
-- Visualisation potentielle
+Uses Pandas to load and analyze the generated CSV:
+- Mean and standard deviation calculation
+- Probability of specific events
+- Potential visualization
 
 ---
 
 ## Installation
 
-### Prérequis
+### Prerequisites
 
-- **C compiler** : GCC, Clang, ou MinGW
-- **Bibliothèques** : math.h, stdlib.h, stdio.h (standards)
-- **Python** (optionnel) : Python 3.7+ avec Pandas
+- **C compiler** : GCC, Clang, or MinGW
+- **Libraries** : math.h, stdlib.h, stdio.h (standard)
+- **Python** (optional) : Python 3.7+ with Pandas
 
 ### Compilation
 
-#### Avec GCC (Linux/Mac)
+#### With GCC (Linux/Mac)
 
 ```bash
 gcc -o GaussGauss main.c -lm
 ```
 
-- `-lm` : Lie la mathématiques (important pour sqrt, log, cos, sin, pow)
+- `-lm` : Links mathematics library (important for sqrt, log, cos, sin, pow)
 
-#### Avec MinGW (Windows)
+#### With MinGW (Windows)
 
 ```bash
 gcc -o GaussGauss.exe main.c -lm
 ```
 
-#### Avec Code::Blocks
+#### With Code::Blocks
 
-1. Ouvrir `Random_Gaussian.cbp`
+1. Open `Random_Gaussian.cbp`
 2. Build > Build (F9)
 3. Run (Ctrl+F10)
 
-### Vérification
+### Verification
 
 ```bash
 $ ./GaussGauss
@@ -170,36 +170,36 @@ Variance: 0.012193
 
 ---
 
-## Utilisation
+## Usage
 
-### Exécution basique
+### Basic Execution
 
 ```bash
 ./GaussGauss
 ```
 
-**Sortie console :**
-- Les 100 premiers échantillons
-- Temps d'exécution en secondes
-- Statistiques descriptives (moyenne, variance)
+**Console Output:**
+- First 100 samples
+- Execution time in seconds
+- Descriptive statistics (mean, variance)
 
-### Génération des données
+### Data Generation
 
 ```bash
-./GaussGauss > /dev/null  # Exécution silencieuse (CSV généré quand même)
+./GaussGauss > /dev/null  # Silent execution (CSV still generated)
 ```
 
-### Analyse des résultats
+### Analyzing Results
 
 #### Python
 
 ```python
 import pandas as pd
 
-# Charger le CSV (adapter le chemin)
+# Load CSV (adapt path as needed)
 data = pd.read_csv('sample_data.csv', header=None)
 
-# Statistiques
+# Statistics
 mean = data[0].mean()
 std = data[0].std()
 variance = data[0].var()
@@ -208,175 +208,175 @@ print(f"Mean: {mean}")
 print(f"Std Dev: {std}")
 print(f"Variance: {variance}")
 
-# Histogramme
+# Histogram
 import matplotlib.pyplot as plt
 plt.hist(data[0], bins=100, density=True, alpha=0.7)
-plt.xlabel('Valeur')
-plt.ylabel('Fréquence')
-plt.title('Distribution Gaussienne - Box-Muller')
+plt.xlabel('Value')
+plt.ylabel('Frequency')
+plt.title('Gaussian Distribution - Box-Muller')
 plt.show()
 ```
 
-#### Bash (analyse rapide)
+#### Bash (Quick Analysis)
 
 ```bash
-# Moyenne
+# Mean
 awk '{sum+=$1} END {print sum/NR}' sample_data.csv
 
 # Min/Max
 awk '{if(NR==1||$1<min)min=$1} {if(NR==1||$1>max)max=$1} END {print min, max}' sample_data.csv
 
-# Nombre de valeurs
+# Number of values
 wc -l sample_data.csv
 ```
 
 ---
 
-## Résultats et analyse
+## Results and Analysis
 
-### Données générées
+### Generated Data
 
-- **Nombre d'échantillons** : 1 000 000
-- **Format** : CSV (1 valeur par ligne)
-- **Taille du fichier** : ~11 MB
-- **Paramètres** : μ = 0, σ = 2^(-3.19) ≈ 0.1104
+- **Number of samples** : 1,000,000
+- **Format** : CSV (1 value per line)
+- **File size** : ~11 MB
+- **Parameters** : μ = 0, σ = 2^(-3.19) ≈ 0.1104
 
-### Propriétés statistiques attendues
+### Expected Statistical Properties
 
-Pour une distribution normale N(0, σ²) avec 1M échantillons :
+For a normal distribution N(0, σ²) with 1M samples:
 
-| Métrique | Théorique | Observé (typique) |
-|----------|-----------|-------------------|
-| **Moyenne** | 0.0 | ≈ ±0.0003 |
-| **Écart-type** | 0.1104 | ≈ 0.1104 |
+| Metric | Theoretical | Observed (typical) |
+|--------|-------------|-------------------|
+| **Mean** | 0.0 | ≈ ±0.0003 |
+| **Standard Deviation** | 0.1104 | ≈ 0.1104 |
 | **Skewness** | 0.0 | ≈ ±0.01 |
 | **Kurtosis** | 3.0 | ≈ 3.0 |
 
-### Tests de validation
+### Validation Tests
 
-1. **Normalité** : Shapiro-Wilk test, Kolmogorov-Smirnov
-2. **Absence de biais** : Test t pour la moyenne
-3. **Variance correcte** : Test F pour la variance
-4. **Indépendance** : Autocorrélation lag-1
-
----
-
-## Détails techniques
-
-### 📊 Algorithme Box-Muller
-
-**Complexité :**
-- **Temps** : O(n) pour n échantillons (1 itération + 1 décision)
-- **Espace** : O(n) pour stocker les échantillons
-
-**Avantages :**
-- Exact (pas d'approximation)
-- Efficace (2 valeurs uniformes → 2 valeurs normales)
-- Fondement mathématique solide
-
-**Inconvénients :**
-- Requires trigonometric functions (coûteux)
-- Rejet potentiel si u1 ≤ 0
-
-### 🔒 Sécurité cryptographique
-
-Le choix σ = 2^(-3.19) vise à :
-- **Minimiser les fuites d'information** : Erreurs très petites
-- **Maximiser la sécurité** : Difficulté du LWE maintenue
-- **Équilibre théorie/pratique** : Réalisable en calcul
-
-### 🎯 Cas d'usage
-
-1. **Cryptographie post-quantique** : Génération d'erreurs pour LWE/RLWE
-2. **Chiffrement homomorphe** : Initialisation de paramètres
-3. **Modélisation statistique** : Simulation de phénomènes gaussiens
-4. **Validation d'algorithmes** : Jeux de test pour RNG
+1. **Normality** : Shapiro-Wilk test, Kolmogorov-Smirnov
+2. **No Bias** : t-test for mean
+3. **Correct Variance** : F-test for variance
+4. **Independence** : Lag-1 autocorrelation
 
 ---
 
-## Optimisations et considérations
+## Technical Details
+
+### 📊 Box-Muller Algorithm
+
+**Complexity:**
+- **Time** : O(n) for n samples (1 iteration + 1 decision)
+- **Space** : O(n) to store samples
+
+**Advantages:**
+- Exact (no approximation)
+- Efficient (2 uniform values → 2 normal values)
+- Sound mathematical foundation
+
+**Disadvantages:**
+- Requires trigonometric functions (expensive)
+- Potential rejection if u1 ≤ 0
+
+### 🔒 Cryptographic Security
+
+The choice σ = 2^(-3.19) aims to:
+- **Minimize information leakage** : Very small errors
+- **Maximize security** : LWE hardness maintained
+- **Theory/practice balance** : Computationally feasible
+
+### 🎯 Use Cases
+
+1. **Post-quantum cryptography** : Error generation for LWE/RLWE
+2. **Homomorphic encryption** : Parameter initialization
+3. **Statistical modeling** : Gaussian phenomenon simulation
+4. **Algorithm validation** : RNG test suites
+
+---
+
+## Optimizations and Considerations
 
 ### ⚡ Performance
 
-**Mesurée sur :**
+**Measured on:**
 - Machine : Moderately recent (2020+)
-- 1 000 000 échantillons
-- Temps typique : **0.025 - 0.100 secondes**
+- 1,000,000 samples
+- Typical time : **0.025 - 0.100 seconds**
 
 ```
-Rate: ~10-40 millions d'échantillons/seconde
+Rate: ~10-40 million samples/second
 ```
 
-### 🔧 Améliorations possibles
+### 🔧 Possible Improvements
 
-#### 1. Utiliser le 2ème résultat (Box-Muller produit 2 valeurs)
+#### 1. Use the 2nd Result (Box-Muller produces 2 values)
 
 ```c
-// Actuellement : un seul x1 utilisé
+// Currently : only x1 used
 return mu + sigma * x1;
 
-// Optimisé : générer 2 à chaque appel
-// Réduire les appels de 50%
+// Optimized : generate 2 per call
+// Reduce calls by 50%
 ```
 
-#### 2. SIMD/Vectorisation
+#### 2. SIMD/Vectorization
 
 ```c
-// Utiliser SSE/AVX pour traiter plusieurs paires en parallèle
+// Use SSE/AVX to process multiple pairs in parallel
 #include <immintrin.h>  // AVX
 ```
 
-#### 3. Générateur uniforme meilleur
+#### 3. Better Uniform Generator
 
 ```c
-// Remplacer rand() par PCG ou MT19937
+// Replace rand() with PCG or MT19937
 #include <random.h>  // C++11
 ```
 
-#### 4. Allocation statique ou stack
+#### 4. Static or Stack Allocation
 
 ```c
-// Au lieu de malloc/free, pré-allouer
-double sample[1000000];  // Risqué sur stack
+// Instead of malloc/free, pre-allocate
+double sample[1000000];  // Risky on stack
 ```
 
-### 🐛 Points d'attention
+### 🐛 Points of Attention
 
-1. **Gestion du log(0)** ✅
-   - Vérification `u1 > 0` avant log
+1. **log(0) Handling** ✅
+   - Check `u1 > 0` before log
    
-2. **Précision flottante**
-   - Utiliser `double` (pas `float`)
+2. **Floating Point Precision**
+   - Use `double` (not `float`)
    
-3. **Seed du RNG**
-   - `srand(time(NULL))` OK pour démo, non-cryptographique
-   - Pour crypto : utiliser `/dev/urandom` ou `getrandom()`
+3. **RNG Seed**
+   - `srand(time(NULL))` OK for demo, not cryptographic
+   - For crypto: use `/dev/urandom` or `getrandom()`
    
-4. **CSV bien formé**
-   - Format : 1 nombre décimal par ligne
-   - Pas de header, pas de séparateur
+4. **Well-formed CSV**
+   - Format: 1 decimal number per line
+   - No header, no separators
 
 ---
 
-## Auteur
+## Author
 
 **FALL Abdoul Ahad**
 
-- Projet créé : Janvier 2025
-- Focus : Cryptographie post-quantique, statistical analysis
-- Contexte : Recherche en sécurité des systèmes cryptographiques
+- Project created : January 2025
+- Focus : Post-quantum cryptography, statistical analysis
+- Context : Cryptographic systems security research
 
 ---
 
-## 📚 Références
+## 📚 References
 
-### Livres et articles
+### Books and Articles
 
 1. **Box, G. E. P., & Muller, M. E.** (1958). "A Note on the Generation of Random Normal Deviates."
 2. **Peikert, C.** (2016). "A Decade of Lattice Cryptography"
 3. **Lyubashevsky, V., Peikert, C., & Regev, O.** (2010). "On Ideal Lattices and Learning with Errors over Rings"
 
-### Ressources en ligne
+### Online Resources
 
 - [Wikipedia: Box-Muller Transform](https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform)
 - [Post-Quantum Cryptography (NIST)](https://csrc.nist.gov/projects/post-quantum-cryptography/)
@@ -384,23 +384,23 @@ double sample[1000000];  // Risqué sur stack
 
 ---
 
-## 📄 Licence
+## 📄 License
 
-Ce projet est fourni **à titre éducatif et de recherche**. Utilisation libre avec attribution.
-
----
-
-## 🤝 Améliorations futures
-
-- [ ] Support de différents paramètres σ en ligne de commande
-- [ ] Parallélisation multi-thread (OpenMP)
-- [ ] Benchmark comparatif (Ziggurat, Marsaglia, etc.)
-- [ ] Tests statistiques intégrés (KS test, Anderson-Darling)
-- [ ] Sortie graphique (gnuplot, matplotlib integration)
-- [ ] Version C++ moderne avec std::normal_distribution
-- [ ] Documentation des résultats de validation en LaTeX
+This project is provided **for educational and research purposes**. Free to use with attribution.
 
 ---
 
-**Dernière mise à jour** : Janvier 2025  
-**Status** : Production-ready pour usages pédagogiques et de recherche
+## 🤝 Future Improvements
+
+- [ ] Support for different σ parameters via command line
+- [ ] Multi-thread parallelization (OpenMP)
+- [ ] Comparative benchmark (Ziggurat, Marsaglia, etc.)
+- [ ] Integrated statistical tests (KS test, Anderson-Darling)
+- [ ] Graphical output (gnuplot, matplotlib integration)
+- [ ] Modern C++ version with std::normal_distribution
+- [ ] Validation results documentation in LaTeX
+
+---
+
+**Last Updated** : January 2025  
+**Status** : Production-ready for educational and research use
